@@ -8,7 +8,7 @@ const { exists } = require('fs');
 var connection = mysql.createConnection({
 	host     : 'localhost',
 	user     : 'root',
-	password : '',
+	password : 'Ivanbabyuk1+',
 	database : 'seculum'
 });
 
@@ -22,7 +22,7 @@ app.use(bodyParser.urlencoded({extended : true}));
 app.use(bodyParser.json());
 
 app.get('/', function(request, response) {
-	response.redirect('/login')
+	response.render('index.ejs')
 });
 
 app.get('/registar', function(request, response){
@@ -30,11 +30,11 @@ app.get('/registar', function(request, response){
 })
 
 app.post('/authregister', function(request, response){
-	var usernamereg = request.body.usernamereg;
+	var namereg = request.body.usernamereg;
 	var emailreg = request.body.emailreg;
 	var passwordreg = request.body.passwordreg;
-	if(usernamereg && emailreg && passwordreg){
-		connection.query('SELECT * FROM accounts WHERE username = ?', [usernamereg], function(error, results, fields) {
+	if(namereg && emailreg && passwordreg){
+		connection.query('SELECT * FROM accounts WHERE name = ?', [namereg], function(error, results, fields) {
 			if (results.length > 0) {
                 response.send('Account already exists with that username!');
                 response.end();
@@ -42,7 +42,7 @@ app.post('/authregister', function(request, response){
                 // Make sure email is valid
                 response.send('Invalid email address!');
                 response.end();
-            } else if (!/[A-Za-z0-9]+/.test(usernamereg)) {
+            } else if (!/[A-Za-z0-9]+/.test(namereg)) {
                 // Username validation, must be numbers and characters
                 response.send('Username must contain only characters and numbers!');
                 response.end();
@@ -50,7 +50,7 @@ app.post('/authregister', function(request, response){
 		})
 	}
 
-	connection.query('INSERT INTO accounts (username, email, password) VALUES (?, ?, ?);', [usernamereg, emailreg, passwordreg], function(error, results, fields) {
+	connection.query('INSERT INTO accounts (username, email, password) VALUES (?, ?, ?);', [namereg, emailreg, passwordreg], function(error, results, fields) {
 		if (error){
 			return console.log(error)
 		}
@@ -64,13 +64,13 @@ app.get('/login', function(request, response){
 })
 
 app.post('/authlogin', function(request, response) {
-	var username = request.body.username;
+	var name = request.body.username;
 	var password = request.body.password;
-	if (username && password) {
-		connection.query('SELECT * FROM accounts WHERE username = ? AND password = ?', [username, password], function(error, results, fields) {
+	if (name && password) {
+		connection.query('SELECT * FROM accounts WHERE name = ? AND password = ?', [name, password], function(error, results, fields) {
 			if (results.length > 0) {
 				request.session.loggedin = true;
-				request.session.username = username;
+				request.session.name = name;
 				response.redirect('/home');
 			} else {
 				response.send('Incorrect Username and/or Password!');
@@ -87,7 +87,7 @@ app.get('/home', function(request, response) {
 	if (request.session.loggedin) {
 		response.render('home.ejs')
 	} else {
-		response.send('Please login to view this page!');
+		response.redirect('/login')
 	}
 	response.end();
 });
